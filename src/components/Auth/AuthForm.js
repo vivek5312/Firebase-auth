@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-
 import classes from "./AuthForm.module.css";
 
 const AuthForm = () => {
@@ -7,47 +6,59 @@ const AuthForm = () => {
   const passwordInputRef = useRef();
 
   const [isLogin, setIsLogin] = useState(true);
- const [isLoading,setisLoading]=useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
   };
+
   const submitHandler = (e) => {
     e.preventDefault();
+  
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
-
-    setisLoading(true);
-  if(isLogin){
-
-  }
-  else{
-    fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=AIzaSyChK707mathgXZfxOEybHq61Gomczbf1eU',
-    {
-     method: 'POST',
-  body: JSON.stringify({
-    email: enteredEmail,
-    password: enteredPassword,
-    returnSecureToken: true,
-      }),
-      headers:{
-        'Content-Type':'application/json'
-      }
+  
+    setIsLoading(true);
+  
+    let url;
+    if (isLogin) {
+      url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyChK707mathgXZfxOEybHq61Gomczbf1eU';
+    } else {
+      url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyChK707mathgXZfxOEybHq61Gomczbf1eU';
     }
-    ).then(res=>{
-      setisLoading(false);
-      if(res.ok){
-        //...
-      }
-      else{
-        res.json().then(data=>{
-          let errormessage='Authentication Failed!';
-          alert(errormessage);
-        })
-      }
+  
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        email: enteredEmail,
+        password: enteredPassword,
+        returnSecureToken: true,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
-  }
-
+      .then((response) => response.json())
+      .then((data) => {
+        setIsLoading(false);
+  
+        if (data.error) {
+          let errormessage = 'Authentication failed!';
+          alert(errormessage);
+        } else {
+          // Authentication successful, you can console log the idToken
+          console.log('idToken:', data.idToken);
+          // You can also save the idToken in a state or context if needed
+        }
+      })
+      .catch((error) => {
+        // Handle errors
+        alert('An error occurred. Please try again.');
+        console.error('Error:', error);
+        setIsLoading(false);
+      });
   };
+  
   return (
     <section className={classes.auth}>
       <h1>{isLogin ? "Login" : "Sign Up"}</h1>
